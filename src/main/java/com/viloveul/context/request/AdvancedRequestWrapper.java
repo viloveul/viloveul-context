@@ -1,5 +1,6 @@
 package com.viloveul.context.request;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.util.ContentCachingRequestWrapper;
@@ -17,24 +18,26 @@ import java.io.InputStreamReader;
 
 public class AdvancedRequestWrapper extends ContentCachingRequestWrapper {
 
-    private final byte[] cachedContent;
+    private byte[] cachedContentStream;
 
     public AdvancedRequestWrapper(HttpServletRequest request) throws IOException {
         super(request);
-        InputStream requestInputStream = request.getInputStream();
-        this.cachedContent = StreamUtils.copyToByteArray(requestInputStream);
+        String contentType = this.getContentType();
+        if (contentType != null && contentType.contains("application/json") && !HttpMethod.GET.matches(this.getMethod())) {
+            this.cachedContentStream = StreamUtils.copyToByteArray(request.getInputStream());
+        }
     }
 
     @Override
     @NonNull
     public ServletInputStream getInputStream() {
-        return new AdvancedInputStream(this.cachedContent);
+        return new AdvancedInputStream(this.cachedContentStream);
     }
 
     @Override
     @NonNull
     public BufferedReader getReader() {
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(this.cachedContent);
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(this.cachedContentStream);
         return new BufferedReader(new InputStreamReader(byteArrayInputStream));
     }
 

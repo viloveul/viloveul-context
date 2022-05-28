@@ -1,6 +1,8 @@
 package com.viloveul.context.behaviour;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.viloveul.context.util.misc.ActivityRecord;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
@@ -23,8 +25,11 @@ public class ActivityInterceptor implements HandlerInterceptor {
 
     private final Function<Map<String, String>, Boolean> handler;
 
-    public ActivityInterceptor(Function<Map<String, String>, Boolean> handler) {
+    private final ObjectMapper mapper;
+
+    public ActivityInterceptor(Function<Map<String, String>, Boolean> handler, ObjectMapper mapper) {
         this.handler = handler;
+        this.mapper = mapper;
     }
 
     @Override
@@ -53,11 +58,21 @@ public class ActivityInterceptor implements HandlerInterceptor {
                 map.put("ip_address", this.extractIpAddress(request));
                 map.put("reference", request.getHeader("X-Requested-With"));
                 map.put("action", action.toUpperCase(Locale.ROOT));
-                map.put("payload", hasRecord ? new String(StreamUtils.copyToByteArray(request.getInputStream())) : null);
+                map.put("payload", hasRecord ? this.extractPayload(request) : null);
                 this.handler.apply(map);
             } catch (Exception e) {
                 LOGGER.error(e.getMessage());
             }
+        }
+    }
+
+    @SneakyThrows
+    private String extractPayload(HttpServletRequest request) {
+        String contentType = request.getContentType();
+        if (contentType != null && contentType.contains("application/json")) {
+            return new String(StreamUtils.copyToByteArray(request.getInputStream()));
+        } else {
+            return this.mapper.writeValueAsString(request.getParameterMap());
         }
     }
 
