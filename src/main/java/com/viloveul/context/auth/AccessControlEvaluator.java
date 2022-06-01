@@ -73,7 +73,7 @@ public class AccessControlEvaluator implements PermissionEvaluator {
                 if (
                     AccessControlCollection.hasConfiguration(resource) &&
                     this.isGrantedByUser(authentication, resource, operation.toString()) &&
-                    AccessControlCollection.validate(resource, (DetailAuthentication) authentication.getDetails(), new AccessEvaluator(operation.toString(), object.toString()))
+                    AccessControlCollection.validate(resource, (DetailAuthentication) authentication.getDetails(), object.toString())
                 ) {
                     return true;
                 }

@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface SearchProperties {
+public @interface SearchPropertyAuthorization {
 
     @NonNull
     String resource();
@@ -18,8 +18,6 @@ public @interface SearchProperties {
     String operation();
 
     Allow[] allows() default {};
-
-    boolean customizer() default false;
 
     @interface Allow {
 

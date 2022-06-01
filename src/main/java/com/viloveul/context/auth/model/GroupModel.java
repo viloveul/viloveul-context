@@ -10,6 +10,6 @@ public interface GroupModel {
 
     GroupModel getParent();
 
-    Set<? extends GroupModel> getChilds();
+    Set<? extends GroupModel> getChilds(); // NOSONAR
 
 }

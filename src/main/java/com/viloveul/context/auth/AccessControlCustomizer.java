@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.io.Serializable;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public interface AccessControlCustomizer {
@@ -22,9 +22,9 @@ public interface AccessControlCustomizer {
 
     interface Executor<T> extends Serializable {
 
-        Specification<T> specification(DetailAuthentication authentication, String operation);
+        Specification<T> specification(DetailAuthentication authentication);
 
-        boolean checker(DetailAuthentication authentication, AccessEvaluator evaluator);
+        boolean checker(DetailAuthentication authentication, String object);
 
     }
 
@@ -32,7 +32,7 @@ public interface AccessControlCustomizer {
 
         Specification<T> specification();
 
-        AccessEvaluator evaluator();
+        String object();
 
     }
 
@@ -43,25 +43,25 @@ public interface AccessControlCustomizer {
 
         private final Executor<T> executor;
 
-        public DefaultAccess(String resource, BiFunction<DetailAuthentication, String, Specification<T>> specification, Predicate<Handler<T>> checker) {
+        public DefaultAccess(String resource, Function<DetailAuthentication, Specification<T>> specification, Predicate<Handler<T>> checker) {
             this.resource = resource;
             this.executor = new Executor<T>() {
                 @Override
-                public Specification<T> specification(DetailAuthentication authentication, String operation) {
-                    return specification.apply(authentication, operation);
+                public Specification<T> specification(DetailAuthentication authentication) {
+                    return specification.apply(authentication);
                 }
 
                 @Override
-                public boolean checker(DetailAuthentication authentication, AccessEvaluator evaluator) {
+                public boolean checker(DetailAuthentication authentication, String object) {
                     return checker.test(new Handler<T>() {
                         @Override
                         public Specification<T> specification() {
-                            return specification.apply(authentication, evaluator.getOperation());
+                            return specification.apply(authentication);
                         }
 
                         @Override
-                        public AccessEvaluator evaluator() {
-                            return evaluator;
+                        public String object() {
+                            return object;
                         }
                     });
                 }

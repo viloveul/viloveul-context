@@ -71,25 +71,22 @@ public class SearchAuthorization<T> implements Specification<T> {
     public SearchAuthorization(
         Authentication authentication,
         @NonNull Configuration configuration,
-        @NonNull SearchProperties properties
+        @NonNull SearchPropertyAuthorization properties
     ) {
         this(authentication, configuration, properties.resource(), properties.operation());
-        for (SearchProperties.Allow allow : properties.allows()) {
-            if (allow.option() == SearchProperties.Option.USER) {
+        for (SearchPropertyAuthorization.Allow allow : properties.allows()) {
+            if (allow.option() == SearchPropertyAuthorization.Option.USER) {
                 this.allows.add(new UserAllow(allow.field()));
             } else {
                 this.allows.add(new GroupAllow(allow.field()));
             }
         }
-        if (properties.customizer()) {
+        if (this.access && AccessControlCollection.hasConfiguration(properties.resource())) {
             this.allows.add((search, root, builder, query) -> {
-                if (AccessControlCollection.hasConfiguration(search.resource)) {
-                    @SuppressWarnings("unchecked")
-                    Root<T> rootCast = (Root<T>) root;
-                    Specification<T> specification = AccessControlCollection.fetchSpecification(search.resource, search.operation, search.authentication);
-                    return specification.toPredicate(rootCast, query, builder);
-                }
-                return builder.disjunction();
+                @SuppressWarnings("unchecked")
+                Root<T> rootCast = (Root<T>) root;
+                Specification<T> specification = AccessControlCollection.fetchSpecification(search.resource, search.authentication);
+                return specification.toPredicate(rootCast, query, builder);
             });
         }
     }

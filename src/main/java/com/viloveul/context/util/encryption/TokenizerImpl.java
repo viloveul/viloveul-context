@@ -28,14 +28,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
@@ -359,6 +352,8 @@ public class TokenizerImpl implements Tokenizer {
             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
         ) {
             return objectInputStream.readObject();
+        } catch (StreamCorruptedException e) {
+            return new String(bytes);
         }
     }
 

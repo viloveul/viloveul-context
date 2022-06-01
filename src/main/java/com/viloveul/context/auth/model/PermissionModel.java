@@ -1,8 +1,5 @@
 package com.viloveul.context.auth.model;
 
-import javax.persistence.Entity;
-
-//@Entity(name = "Permission")
 public interface PermissionModel {
     String getId();
     String getUser();

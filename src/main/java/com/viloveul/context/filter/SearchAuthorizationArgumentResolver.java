@@ -11,13 +11,13 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import java.util.function.Function;
 
-public class SearchArgumentResolver<T> implements HandlerMethodArgumentResolver {
+public class SearchAuthorizationArgumentResolver<T> implements HandlerMethodArgumentResolver {
 
     private final HandlerMethodArgumentResolver resolver;
 
-    private final Function<SearchProperties, Specification<T>> handler;
+    private final Function<SearchPropertyAuthorization, Specification<T>> handler;
 
-    public SearchArgumentResolver(HandlerMethodArgumentResolver resolver, Function<SearchProperties, Specification<T>> handler) {
+    public SearchAuthorizationArgumentResolver(HandlerMethodArgumentResolver resolver, Function<SearchPropertyAuthorization, Specification<T>> handler) {
         this.resolver = resolver;
         this.handler = handler;
     }
@@ -25,7 +25,7 @@ public class SearchArgumentResolver<T> implements HandlerMethodArgumentResolver 
     @Override
     public boolean supportsParameter(MethodParameter methodParameter) {
         boolean type = SearchSpecification.class.equals(methodParameter.getParameterType().getSuperclass());
-        boolean annotation = methodParameter.hasMethodAnnotation(SearchProperties.class);
+        boolean annotation = methodParameter.hasMethodAnnotation(SearchPropertyAuthorization.class);
         return type && annotation && this.resolver.supportsParameter(methodParameter);
     }
 
@@ -33,8 +33,8 @@ public class SearchArgumentResolver<T> implements HandlerMethodArgumentResolver 
     @Nullable
     public Object resolveArgument(@NonNull MethodParameter methodParameter, @Nullable ModelAndViewContainer modelAndViewContainer, @NonNull NativeWebRequest nativeWebRequest, @Nullable WebDataBinderFactory webDataBinderFactory) throws Exception {
         Object attribute = this.resolver.resolveArgument(methodParameter, modelAndViewContainer, nativeWebRequest, webDataBinderFactory);
-        if (attribute != null && methodParameter.hasMethodAnnotation(SearchProperties.class)) {
-            SearchProperties injector = methodParameter.getMethodAnnotation(SearchProperties.class);
+        if (attribute != null && methodParameter.hasMethodAnnotation(SearchPropertyAuthorization.class)) {
+            SearchPropertyAuthorization injector = methodParameter.getMethodAnnotation(SearchPropertyAuthorization.class);
             if (injector != null) {
                 @SuppressWarnings("unchecked")
                 SearchSpecification<T> specification = (SearchSpecification<T>) attribute;

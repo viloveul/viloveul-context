@@ -19,12 +19,12 @@ public class AccessControlCollection {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Specification<T> fetchSpecification(String resource, String operation, DetailAuthentication authentication) {
-        return (Specification<T>) controls.get(resource).specification(authentication, operation);
+    public static <T> Specification<T> fetchSpecification(String resource, DetailAuthentication authentication) {
+        return (Specification<T>) controls.get(resource).specification(authentication);
     }
 
-    public static boolean validate(String resource, DetailAuthentication authentication, AccessEvaluator evaluator) {
-        return controls.get(resource).checker(authentication, evaluator);
+    public static boolean validate(String resource, DetailAuthentication authentication, String object) {
+        return controls.get(resource).checker(authentication, object);
     }
 
     public static boolean hasConfiguration(String resource) {
