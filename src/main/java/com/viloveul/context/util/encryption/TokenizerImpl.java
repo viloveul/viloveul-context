@@ -13,10 +13,14 @@ import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.BadPaddingException;
@@ -59,6 +63,9 @@ public class TokenizerImpl implements Tokenizer {
     private static final int MAX_RSAENC_LENGTH = 117;
 
     private static final int MAX_RSADEC_LENGTH = 128;
+
+    @Autowired
+    protected ResourceLoader resourceLoader;
 
     @Autowired
     protected ObjectMapper objectMapper;
@@ -368,19 +375,20 @@ public class TokenizerImpl implements Tokenizer {
         }
     }
 
+    @SneakyThrows
     protected byte[] loadKey(String path) {
-        File keyFile = new File(path);
-        byte[] keyBytes = null;
-        try (
-            FileInputStream keyFileInput = new FileInputStream(keyFile);
-            DataInputStream keyDataInput = new DataInputStream(keyFileInput)
-        ) {
-            keyBytes = new byte[(int) keyFile.length()];
-            keyDataInput.readFully(keyBytes);
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e.getCause());
+        InputStream is = this.resourceLoader.getResource(path).getInputStream();
+//        byte[] keyBytes = new byte[is.available()];
+//        is.read(keyBytes);
+//        return keyBytes;
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int nRead;
+        byte[] data = new byte[4];
+        while ((nRead = is.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
         }
-        return keyBytes;
+        buffer.flush();
+        return buffer.toByteArray();
     }
 
     private static byte[] randomNonce(int len) {
